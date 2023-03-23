@@ -8,21 +8,23 @@ namespace Task3.Scripts
         public event Action<float> OnCapacityChanged;
         public event Action OnCapacityExceeded;
 
-        [SerializeField] private float maxCapacity;
+        [SerializeField] private float baseCapacity;
         [SerializeField] private DamageReceiver nextReceiver;
 
+        private float _maxCapacity;
         protected float _currentCapacity;
-        public float MaxCapacity => maxCapacity;
+        public float MaxCapacity => _maxCapacity;
 
         protected virtual void Awake()
         {
-            _currentCapacity = maxCapacity;
+            _maxCapacity = baseCapacity;
+            _currentCapacity = _maxCapacity;
             RaiseCapacityChanged();
         }
 
         public void ReceiveDamage(float damage)
         {
-            if (damage == 0)
+            if (damage <= 0)
             {
                 return;
             }
@@ -51,8 +53,16 @@ namespace Task3.Scripts
 
             if (nextReceiver)
             {
-                nextReceiver.ReceiveDamage(Mathf.Abs(capacityDamaged));
+                nextReceiver.ReceiveDamage(-capacityDamaged);
             }
+        }
+
+        public void AddCapacity(float capacity)
+        {
+            var currentPercent = _currentCapacity / _maxCapacity;
+            _maxCapacity += capacity;
+            _currentCapacity = _maxCapacity * currentPercent;
+            RaiseCapacityChanged();
         }
 
         protected void RaiseCapacityChanged()
