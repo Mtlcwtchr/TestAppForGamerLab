@@ -4,6 +4,7 @@ using Task3.Scripts.Game;
 using Task3.Scripts.Modules;
 using Task3.Scripts.Weapons;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Task3.Scripts
 {
@@ -15,6 +16,16 @@ namespace Task3.Scripts
         [SerializeField] private ModulesHandler modulesHandler;
         [SerializeField] private WeaponsHandler weaponsHandler;
         [SerializeField] private Radar radar;
+
+        [SerializeField] private UnityEvent OnModuleAttached;
+        [SerializeField] private UnityEvent OnModuleDetached;
+        [SerializeField] private UnityEvent OnModuleFailedToAttach;
+        
+        [SerializeField] private UnityEvent OnWeaponAttached;
+        [SerializeField] private UnityEvent OnWeaponDetached;
+        [SerializeField] private UnityEvent OnWeaponFailedToAttach;
+
+        [SerializeField] private UnityEvent OnDestroyedEv;
 
         public RechargeableDamageReceiver Shield => shieldDamageReceiver;
         public DamageReceiver Hull => hullDamageReceiver;
@@ -29,13 +40,14 @@ namespace Task3.Scripts
 
         private void Destroy()
         {
-            OnDestroyed?.Invoke();
+            OnDestroyedEv?.Invoke();
+            OnDestroyed?.Invoke(this);
             Destroy(gameObject);
         }
 
         private void Update()
         {
-            if (GameState.IsPaused)
+            if (GameStateProvider.Instance.IsPaused)
             {
                 return;
             }
@@ -53,8 +65,12 @@ namespace Task3.Scripts
 
             FireTheWeapons(_target);
 
-            void TargetDestroyed()
+            void TargetDestroyed(DamageableTarget target)
             {
+                if (_target != target)
+                {
+                    return;
+                }
                 _target.OnDestroyed -= TargetDestroyed;
                 _target = null;
             }
@@ -65,6 +81,11 @@ namespace Task3.Scripts
             if (modulesHandler.TryAddModule(module))
             {
                 module.Apply(this);
+                OnModuleAttached?.Invoke();
+            }
+            else
+            {
+                OnModuleFailedToAttach?.Invoke();
             }
         }
 
@@ -73,17 +94,43 @@ namespace Task3.Scripts
             if (modulesHandler.TryRemoveModule(module))
             {
                 module.Remove(this);
+                OnModuleDetached?.Invoke();
             }
         }
 
         public bool TryAttachWeapon(Weapon weapon)
         {
-            return weaponsHandler.TryAttachWeapon(weapon);
+            if (weaponsHandler.TryAttachWeapon(weapon))
+            {
+                OnWeaponAttached?.Invoke();
+                return true;
+            }
+
+            OnWeaponFailedToAttach?.Invoke();
+            return false;
         }
 
         public bool TryDetachWeapon(Weapon weapon)
         {
-            return weaponsHandler.TryDetachWeapon(weapon);
+            if (weaponsHandler.TryDetachWeapon(weapon))
+            {
+                OnWeaponDetached?.Invoke();
+                return true;
+            }
+
+            return false;
+        }
+
+        public Weapon TryDetachWeapon(WeaponClass weaponClass)
+        {
+            var weapon = weaponsHandler.TryDetachWeapon(weaponClass);
+            if (weapon)
+            {
+                OnWeaponDetached?.Invoke();
+                return weapon;
+            }
+
+            return null;
         }
 
         public void FireTheWeapons(DamageableTarget target)
@@ -93,7 +140,7 @@ namespace Task3.Scripts
 
         public override event Action<Vector3> OnPositionChanged;
         public override Vector3 Position => transform.position;
-        public override event Action OnDestroyed;
+        public override event Action<DamageableTarget> OnDestroyed;
 
         public override void Damage(float damage)
         {

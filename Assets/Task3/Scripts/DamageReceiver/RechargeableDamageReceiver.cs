@@ -26,7 +26,7 @@ namespace Task3.Scripts
 
         private void Update()
         {
-            if (GameState.IsPaused)
+            if (GameStateProvider.Instance.IsPaused)
             {
                 return;
             }

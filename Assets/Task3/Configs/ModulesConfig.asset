@@ -15,4 +15,4 @@ MonoBehaviour:
   shieldRechargeFactor: 1.2
   shieldCapacityFactor: 50
   hullCapacityFactor: 50
-  weaponsRechargeFactor: 1.2
+  weaponsRechargeFactor: 0.8
