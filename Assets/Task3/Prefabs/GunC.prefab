@@ -10,7 +10,7 @@ PrefabInstance:
     - target: {fileID: 4260711789145049738, guid: 120c477dcd88e49efb18d9ae495d71c5, type: 3}
       propertyPath: fireClip
       value: 
-      objectReference: {fileID: 8300000, guid: af66162561d2eed40ad49268cab318bb, type: 3}
+      objectReference: {fileID: 8300000, guid: b8d0c7e7dcf44928aa2c2fff4a9fbb0f, type: 3}
     - target: {fileID: 6793730163341752836, guid: 120c477dcd88e49efb18d9ae495d71c5, type: 3}
       propertyPath: m_Name
       value: GunC
