@@ -14,6 +14,8 @@ namespace Task3.Scripts.Weapons
         private List<Transform> _occupiedSlots;
         private List<Transform> _freeSlots;
 
+        private float _rechargeFactor = 1.0f;
+
         private void Awake()
         {
             _weapons = new List<Weapon>(weaponsCapacity);
@@ -44,6 +46,8 @@ namespace Task3.Scripts.Weapons
                 weapon.transform.SetParent(root);
                 weapon.transform.position = root.position;
                 weapon.transform.rotation = root.rotation;
+                
+                weapon.ModifyRechargeTime(_rechargeFactor);
             }
 
             return true;
@@ -64,6 +68,20 @@ namespace Task3.Scripts.Weapons
             return false;
         }
 
+        public Weapon TryDetachWeapon(WeaponClass weaponClass)
+        {
+            var weapon = _weapons.FirstOrDefault(weapon => weapon.WeaponClass == weaponClass);
+            if (weapon)
+            {
+                if (TryDetachWeapon(weapon))
+                {
+                    return weapon;
+                }
+            }
+
+            return null;
+        }
+
         public bool CanAttachWeapon()
         {
             return _weapons.Count < weaponsCapacity;
@@ -71,6 +89,7 @@ namespace Task3.Scripts.Weapons
 
         public void ModifyWeaponsRechargeSpeed(float factor)
         {
+            _rechargeFactor *= factor;
             foreach (var weapon in _weapons)
             {
                 weapon.ModifyRechargeTime(factor);

@@ -7,7 +7,7 @@ namespace Task3.Scripts.Weapons
     public class Projectile : MonoBehaviour
     {
         [SerializeField] private float speed;
-        
+
         public event Action<Projectile> OnHit;
 
         private DamageableTarget _target;
@@ -17,7 +17,7 @@ namespace Task3.Scripts.Weapons
 
         private void Update()
         {
-            if (GameState.IsPaused)
+            if (GameStateProvider.Instance.IsPaused)
             {
                 return;
             }
@@ -45,7 +45,12 @@ namespace Task3.Scripts.Weapons
             _damage = damage;
         }
 
-        private void TargetDestroyed()
+        public void Stop()
+        {
+            Hit();
+        }
+
+        private void TargetDestroyed(DamageableTarget target)
         {
             Hit();
         }

@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Task3.Scripts.Weapons
 {
@@ -13,6 +15,10 @@ namespace Task3.Scripts.Weapons
 
         [SerializeField] private float baseDamage;
         [SerializeField] private float baseRechargeTime;
+
+        [SerializeField] private UnityEvent OnFire;
+        [SerializeField] private UnityEvent OnRecharge;
+        [SerializeField] private UnityEvent OnIdle;
 
         public WeaponClass WeaponClass => weaponClass;
 
@@ -83,12 +89,12 @@ namespace Task3.Scripts.Weapons
 
         private void OnDestroy()
         {
-            foreach (Projectile projectile in _projectiles)
+            foreach (var projectile in _activeProjectiles.ToList())
             {
-                projectile.OnHit -= ReleaseProjectile;
+                projectile.Stop();
             }
 
-            foreach (Projectile projectile in _activeProjectiles)
+            foreach (Projectile projectile in _projectiles)
             {
                 projectile.OnHit -= ReleaseProjectile;
             }
@@ -138,12 +144,15 @@ namespace Task3.Scripts.Weapons
             {
                 case WeaponState.Idle:
                     _requestedTarget = null;
+                    OnIdle?.Invoke();
                     break;
                 case WeaponState.Fire:
                     Fire(_requestedTarget);
+                    OnFire?.Invoke();
                     break;
                 case WeaponState.Recharging:
                     Recharge();
+                    OnRecharge?.Invoke();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(state), state, null);

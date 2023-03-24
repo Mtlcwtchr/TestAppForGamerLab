@@ -2,9 +2,9 @@ using System;
 
 namespace Task3.Scripts
 {
-    public interface IDamageable
+    public interface IDamageable<T>
     {
-        event Action OnDestroyed;
+        event Action<T> OnDestroyed;
         void Damage(float damage);
     }
 }
